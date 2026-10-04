@@ -64,12 +64,6 @@ int main(int argc, char *argv[])
 }
 
 void get_args(int argc, char *argv[]){
-
-	// --hirez	-h
-	// --resolution <value> -r <value>
-	// --savepath <value> -s <value>
-	// --luma -l	
-	// --no-print -n
 	
 	for(int i = 2; i<argc; i++){
 		if(strcmp(argv[i], "--no-print") == 0 || strcmp(argv[i], "-n") == 0 ){
@@ -154,13 +148,22 @@ void save_generated_image(char *printed){
 }
 
 void usage(){
-	printf("USAGE:\n");
-	printf("./AsciiConvert.exe [IMAGEPATH] [RESOLUTION (1-9)] [LUMA FORMULA (0-1)] [HIREZ PALETTE (0-1)] [SAVEPATH]\n\n");
-	printf("MINIMAL EXAMPLE:\n");
-	printf("./AsciiConvert.exe Path/To/Image.bmp\n\n");
-	printf("COMPLETE EXAMPLE:\n");
-	printf("./AsciiConvert.exe Path/To/Image.bmp 5 1 1 Path/To/Save.txt\n\n");
-	printf("MINIMAL EXAMPLE DEFAULT VALUES:\n");
-	printf("[IMAGEPATH] 5 0 0\n\n");
-	printf("NOTE: ONLY 24-BIT UNCOMPRESSED BMP FILES ARE SUPPORTED\n");
+
+	// -h, --hirez
+	// -r, --resolution <value>
+	// -s, --savepath <path>
+	// -l, --luma
+	// -n, --no-print
+	
+	printf("Usage: bmp-ascii.exe <bmp-image-path> [options]\n\n");
+
+	printf("Arguments:\n  <bmp-image-path>\t\t Path to the BMP image (required)\n");
+	printf("\t\t\t\t\t NOTE: ONLY 24-BIT UNCOMPRESSED BMP FILES ARE SUPPORTED\n\n");
+
+	printf("Options:\n");
+	printf("  -h, --hirez\t\t\t Enables high resolution ASCII palette\n");
+	printf("  -l, --luma\t\t\t Enables luma approximation for image grayscale detection\n");
+	printf("  -n, --no-print\t\t Disables terminal printing. \n\t\t\t\t\t NOTE: Filepath must be provided with '--savepath'\n");
+	printf("  -r, --resolution <value>\t The resolution of generated ASCII art (default 5). \n\t\t\t\t\t NOTE: Lower value means higher quality\n");
+	printf("  -s, --savepath <path>\t\t The path where the generated ASCII art is saved\n");
 }
