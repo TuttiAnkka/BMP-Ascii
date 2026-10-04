@@ -23,26 +23,22 @@ unsigned int resolution = 5; // Horizontal resolution - Lower = higher
 unsigned int grid_ratio = 2; // Vertical resolution - determines the ratio of hor_resolution:ver_resolution
 bool luma_formula = false; 
 bool hirez_palette = false; 
-bool save_image = false;
+char *save_image = NULL;
+bool no_print = false;
 
 void get_bmp_file(char *path);
 void usage(void);
+void save_generated_image(char *printed);
+void get_args(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-	if (argc < 2 || argc > 5 || strcmp(argv[1], "--help") == 0){
+	if (argc < 2 || strcmp(argv[1], "--help") == 0){
 		usage();
 		exit(EXIT_FAILURE);
 	}
-
-	if (argc >= 3)
-		resolution = (atoi(argv[2]) > 0 && atoi(argv[2]) < 10) ? atoi(argv[2]) : resolution;
-	if (argc >= 4)
-		luma_formula = atoi(argv[3]);
-	if (argc >= 5)
-		hirez_palette = atoi(argv[4]);
-	if (argc >= 6)
-		save_image = atoi(argv[5]);
+	
+	get_args(argc, argv);
 
 	char *palette = hirez_palette ? palette_high: palette_low;
 
@@ -51,12 +47,81 @@ int main(int argc, char *argv[])
 
 	get_bmp_headers(bmpfile, &info_header, &file_header);
 	read_pixel_data(bmpfile, &bmp_image, &info_header, &file_header);
-	print_image(&bmp_image, resolution, grid_ratio, palette, luma_formula);
+	char *ascii= get_ascii_string(&bmp_image, resolution, grid_ratio, palette, luma_formula);
 
 	free(bmp_image.image);
 	fclose(bmpfile);
 
+	if (no_print == false)
+		printf("%s", ascii);
+
+	if (save_image != NULL)
+		save_generated_image(ascii);
+
+	free(ascii);
+
 	exit(EXIT_SUCCESS);
+}
+
+void get_args(int argc, char *argv[]){
+
+	// --hirez	-h
+	// --resolution <value> -r <value>
+	// --savepath <value> -s <value>
+	// --luma -l	
+	// --no-print -n
+	
+	for(int i = 2; i<argc; i++){
+		if(strcmp(argv[i], "--no-print") == 0 || strcmp(argv[i], "-n") == 0 ){
+			no_print = true;
+		}
+		else if(strcmp(argv[i], "--hirez") == 0 || strcmp(argv[i], "-h") == 0 ){
+			hirez_palette = true;
+		}
+		else if (strcmp(argv[i], "--luma") == 0 || strcmp(argv[i], "-l") == 0){
+			luma_formula = true;
+		}
+		else if (strcmp(argv[i], "--resolution") == 0 || strcmp(argv[i], "-r") == 0){
+			if(i+1 < argc){
+				char *end;
+				long n = strtol(argv[i+1], &end, 10); 
+
+				if (end == argv[i + 1] || *end != '\0') {
+					printf("INVALID ARGUMENT: '%s %s'\nSee --help for details", argv[i], argv[i+1]);
+					exit(EXIT_FAILURE);
+				}
+				if (n > 100 || n < 1){
+					printf("INVALID USAGE OF: '%s %li'\nSee --help for details", argv[i], n);
+					exit(EXIT_FAILURE);
+				}
+
+				resolution = n;
+				i++;
+
+			}else{
+				printf("INVALID USAGE OF: '%s'\nSee --help for details", argv[i]);
+				exit(EXIT_FAILURE);
+			}
+		}
+		else if (strcmp(argv[i], "--savepath") == 0 || strcmp(argv[i], "-s") == 0){
+			if(i+1 >= argc || argv[i+1][0] == '-'){
+				printf("INVALID USAGE OF: '%s'\nSee --help for details", argv[i]);
+				exit(EXIT_FAILURE);
+			}
+
+			save_image = argv[i+1];
+			i++;
+
+		}else{
+			printf("INVALID ARGUMENT: '%s'\nSee --help for details", argv[i]);
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if (no_print == true && save_image == NULL){
+		printf("'--no-print' can only be used when '--savepath <path>' is provided\nSee --help for details");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void get_bmp_file(char *path){
@@ -70,6 +135,22 @@ void get_bmp_file(char *path){
 	}
 
 	//printf("File opened succesfully!\n");
+}
+
+void save_generated_image(char *printed){
+
+	savefile = fopen(save_image, "w");
+
+	if(!savefile){
+		printf("Could not save the generated ASCII art to '%s'", save_image); 
+		fclose(bmpfile);
+		exit(EXIT_FAILURE);
+	}
+
+	fputs(printed, savefile);
+	fclose(savefile);
+
+	printf("ASCII art saved to '%s'", save_image);
 }
 
 void usage(){

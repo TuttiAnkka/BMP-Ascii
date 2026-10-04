@@ -79,12 +79,22 @@ void read_pixel_data(FILE *bmpfile, BMPImage *image, BMPInfoHeader *info_header,
 }
 
 
-void print_image(const BMPImage *image, unsigned int resolution, unsigned int grid_ratio, const char *palette, bool luma_formula){
+char* get_ascii_string(const BMPImage *image, unsigned int resolution, unsigned int grid_ratio, const char *palette, bool luma_formula){
 
 	int height = image->height;
 	int width = image->width;
 	int abs_height = image->abs_height;
 	int row_size = image->row_size;
+
+	// Calculation for the ASCII image string
+	size_t columns = (width + resolution - 1) / resolution;
+	size_t row_height = resolution * grid_ratio;
+	size_t rows = (abs_height + row_height - 1) / row_height;
+	size_t size = rows * (columns + 1) + 1;
+
+	char *print = malloc(size);
+
+	size_t length = 0;
 
 	//printf("Printing started!\n");
 
@@ -125,13 +135,18 @@ void print_image(const BMPImage *image, unsigned int resolution, unsigned int gr
 			}
 
 			char c = get_brightness(average, palette);
-			printf("%c", c);
+			print[length] = c;
+			length++;
+
 		}
 
-		printf("\n");
+		print[length] = '\n';
+		length++;
 	}
 
-	//printf("Success!");
+	print[length] = '\0';
+
+	return print;
 }
 
 char get_brightness(int grid_average, const char *palette){

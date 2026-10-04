@@ -45,7 +45,7 @@ void get_bmp_headers(FILE *bmpfile, BMPInfoHeader *info_header, BMPFileHeader *f
 // Reads pixel data into BMPImage from BMP headers
 void read_pixel_data(FILE *bmpfile, BMPImage *image, BMPInfoHeader *info_header, BMPFileHeader *file_header);
 // Prints the generated ASCII image 
-void print_image(const BMPImage *image, unsigned int resolution, unsigned int grid_ratio, const char *palette, bool luma_formula);
+char* get_ascii_string(const BMPImage *image, unsigned int resolution, unsigned int grid_ratio, const char *palette, bool luma_formula);
 // Gets the ASCII symbol corresponding to grid_average brightness value
 char get_brightness(int grid_average, const char *palette);
 
